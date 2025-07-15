@@ -6,11 +6,9 @@ from selenium.webdriver.chrome.options import Options
 from datetime import datetime, timedelta
 import re
 
-# --- CONFIG ---
 ACTUARY_LIST_URL = "https://www.actuarylist.com"
-API_ENDPOINT = "http://localhost:4000/jobs"  # Change this if your Flask app runs on a different port
+API_ENDPOINT = "http://localhost:4000/jobs"
 
-# --- JOB TYPE MAPPING ---
 ALLOWED_JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship", "Freelance"]
 
 def map_job_type(tags):
@@ -26,7 +24,7 @@ def map_job_type(tags):
             return "Internship"
         if "freelance" in tag_lower:
             return "Freelance"
-    return "Full-time"  # Default
+    return "Full-time"
 
 def parse_posting_date(text):
     now = datetime.utcnow()
@@ -41,16 +39,14 @@ def parse_posting_date(text):
         days = int(re.search(r"(\d+)\s*d", text).group(1))
         dt = now - timedelta(days=days)
     else:
-        # fallback: return now
         dt = now
     return dt.strftime("%Y-%m-%dT%H:%M:%S")
 
-# --- SETUP SELENIUM ---
 options = Options()
 options.add_argument("--headless")
 driver = webdriver.Chrome(options=options)
 driver.get(ACTUARY_LIST_URL)
-time.sleep(3)  # Wait for page to load
+time.sleep(3)
 
 jobs = []
 job_cards = driver.find_elements(By.CSS_SELECTOR, "div.Job_job-card__YgDAV")
@@ -78,7 +74,6 @@ for card in job_cards:
 
 driver.quit()
 
-# --- SEND TO BACKEND ---
 for job in jobs:
     try:
         resp = requests.post(API_ENDPOINT, json=job)
